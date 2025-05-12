@@ -118,6 +118,9 @@ export default function Home() {
     if (!selectedQuery) return;
     
     try {
+      setErrorMessage(null);
+      console.log("Executing query:", predefinedQueries[selectedQuery]);
+      
       const response = await fetch('/api/query', {
         method: 'POST',
         headers: {
@@ -127,26 +130,40 @@ export default function Home() {
       });
       
       const result = await response.json();
+      console.log("Query result:", result);
+      
+      if (result.message) {
+        // This is likely an error message from the API
+        setErrorMessage(result.message);
+        return;
+      }
+      
       setData([result]);
       setSuccessMessage('Query executed successfully.');
       setErrorMessage(null);
     } catch (error) {
-      setErrorMessage('Failed to execute query.');
+      console.error("Query execution error:", error);
+      setErrorMessage('Failed to execute query. See console for details.');
       setSuccessMessage(null);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-center text-gray-900 mb-8">
-          XYZ Company Database Viewer
-        </h1>
+        <div className="text-center mb-16">
+          <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 mb-2">
+            XYZ Company Database
+          </h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Powerful data insights for your organization
+          </p>
+        </div>
 
-        <div className="bg-white shadow rounded-lg p-6 mb-8">
+        <div className="bg-white shadow-xl rounded-2xl p-8 mb-10 backdrop-blur-sm bg-opacity-90 border border-gray-100">
           {!connected ? (
-            <form onSubmit={handleConnect} className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <form onSubmit={handleConnect} className="space-y-6">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
                   <label htmlFor="host" className="block text-sm font-medium text-gray-700">
                     Host
@@ -156,7 +173,7 @@ export default function Home() {
                     id="host"
                     value={connectionDetails.host}
                     onChange={(e) => setConnectionDetails({...connectionDetails, host: e.target.value})}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all"
                     required
                   />
                 </div>
@@ -169,7 +186,7 @@ export default function Home() {
                     id="port"
                     value={connectionDetails.port}
                     onChange={(e) => setConnectionDetails({...connectionDetails, port: e.target.value})}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all"
                     required
                   />
                 </div>
@@ -182,7 +199,7 @@ export default function Home() {
                     id="user"
                     value={connectionDetails.user}
                     onChange={(e) => setConnectionDetails({...connectionDetails, user: e.target.value})}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all"
                     required
                   />
                 </div>
@@ -195,7 +212,7 @@ export default function Home() {
                     id="password"
                     value={connectionDetails.password}
                     onChange={(e) => setConnectionDetails({...connectionDetails, password: e.target.value})}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all"
                     required
                   />
                 </div>
@@ -208,36 +225,36 @@ export default function Home() {
                     id="database"
                     value={connectionDetails.database}
                     onChange={(e) => setConnectionDetails({...connectionDetails, database: e.target.value})}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all"
                     required
                   />
                 </div>
               </div>
               <button
                 type="submit"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all transform hover:scale-[1.01]"
               >
                 Connect
               </button>
             </form>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div className="flex space-x-4">
                 <button
                   onClick={handleDisconnect}
-                  className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  className="flex-1 py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all transform hover:scale-[1.01]"
                 >
                   Disconnect
                 </button>
                 <button
                   onClick={handleShowTables}
-                  className="flex-1 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                  className="flex-1 py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all transform hover:scale-[1.01]"
                 >
                   Show Tables
                 </button>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <label htmlFor="query" className="block text-sm font-medium text-gray-700">
                   Select Query
                 </label>
@@ -245,7 +262,7 @@ export default function Home() {
                   id="query"
                   value={selectedQuery}
                   onChange={(e) => setSelectedQuery(e.target.value)}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all bg-white"
                 >
                   <option value="">Select a query...</option>
                   {Object.keys(predefinedQueries).map((queryName) => (
@@ -257,7 +274,7 @@ export default function Home() {
                 <button
                   onClick={handleExecuteQuery}
                   disabled={!selectedQuery}
-                  className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400"
+                  className="w-full py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all transform hover:scale-[1.01]"
                 >
                   Execute Query
                 </button>
@@ -267,7 +284,7 @@ export default function Home() {
         </div>
 
         {errorMessage && (
-          <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-8">
+          <div className="bg-red-50 border-l-4 border-red-400 p-5 rounded-lg mb-10 animate-fade-in">
             <div className="flex">
               <div className="flex-shrink-0">
                 <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -282,7 +299,7 @@ export default function Home() {
         )}
 
         {successMessage && (
-          <div className="bg-green-50 border-l-4 border-green-400 p-4 mb-8">
+          <div className="bg-green-50 border-l-4 border-green-400 p-5 rounded-lg mb-10 animate-fade-in">
             <div className="flex">
               <div className="flex-shrink-0">
                 <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
@@ -296,11 +313,23 @@ export default function Home() {
           </div>
         )}
 
+        {/* Add this for debugging */}
+        {/* 
+        {data && data.length > 0 && (
+          <div className="bg-white shadow rounded-lg p-6 mb-8">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">Debug: Raw Data</h2>
+            <pre className="bg-gray-100 p-4 rounded overflow-auto text-xs">
+              {JSON.stringify(data, null, 2)}
+            </pre>
+          </div>
+        )}
+        */}
+
         {data.map((table, index) => (
-          <div key={index} className="bg-white shadow rounded-lg p-6 mb-8">
+          <div key={index} className="bg-white shadow-xl rounded-2xl p-8 mb-10 backdrop-blur-sm bg-opacity-90 border border-gray-100 overflow-hidden transition-all hover:shadow-2xl">
             {table.table_name && (
-              <h2 className="text-lg font-medium text-gray-900 mb-4">
-                Table: {table.table_name}
+              <h2 className="text-2xl font-bold text-gray-900 mb-5 border-b pb-3">
+                <span className="text-blue-600">{table.table_name}</span>
               </h2>
             )}
             <div className="overflow-x-auto">
@@ -310,7 +339,7 @@ export default function Home() {
                     {table.columns && Array.isArray(table.columns) && table.columns.map((column, colIndex) => (
                       <th
                         key={colIndex}
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-indigo-700"
                       >
                         {column}
                       </th>
@@ -319,13 +348,13 @@ export default function Home() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {table.rows && Array.isArray(table.rows) && table.rows.map((row, rowIndex) => (
-                    <tr key={rowIndex}>
-                      {Array.isArray(row) && row.map((cell: any, cellIndex: number) => (
+                    <tr key={rowIndex} className="hover:bg-gray-50 transition-colors">
+                      {table.columns && Array.isArray(table.columns) && table.columns.map((column, cellIndex) => (
                         <td
                           key={cellIndex}
-                          className="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                          className="px-6 py-4 whitespace-nowrap text-sm text-gray-700"
                         >
-                          {cell != null ? cell.toString() : ''}
+                          {row[column] != null ? row[column].toString() : ''}
                         </td>
                       ))}
                     </tr>

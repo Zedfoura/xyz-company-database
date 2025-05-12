@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Connection Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        input {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Database Connection Test</h1>
+    
+    <div class="card">
+        <h2>Connection</h2>
+        <div class="grid">
+            <div>
+                <label for="host">Host:</label>
+                <input type="text" id="host" value="localhost">
+            </div>
+            <div>
+                <label for="port">Port:</label>
+                <input type="text" id="port" value="3306">
+            </div>
+        </div>
+        <div class="grid">
+            <div>
+                <label for="user">User:</label>
+                <input type="text" id="user" value="root">
+            </div>
+            <div>
+                <label for="password">Password:</label>
+                <input type="password" id="password" value="">
+            </div>
+        </div>
+        <div>
+            <label for="database">Database:</label>
+            <input type="text" id="database" value="xyzcompany">
+        </div>
+        <button onclick="connect()">Connect</button>
+        <button onclick="checkDebug()">Debug Info</button>
+    </div>
+    
+    <div class="card">
+        <h2>Test Query</h2>
+        <div>
+            <label for="query">Query:</label>
+            <input type="text" id="query" value="SELECT * FROM Person LIMIT 5">
+        </div>
+        <button onclick="runQuery()">Run Query</button>
+    </div>
+    
+    <div class="card">
+        <h2>Results</h2>
+        <pre id="results">No results yet.</pre>
+    </div>
+    
+    <script>
+        async function connect() {
+            const resultsElement = document.getElementById('results');
+            resultsElement.textContent = 'Connecting...';
+            
+            const connectionData = {
+                host: document.getElementById('host').value,
+                port: document.getElementById('port').value,
+                user: document.getElementById('user').value,
+                password: document.getElementById('password').value,
+                database: document.getElementById('database').value
+            };
+            
+            try {
+                const response = await fetch('/api/connect', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(connectionData)
+                });
+                
+                const data = await response.json();
+                resultsElement.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultsElement.textContent = `Error: ${error.message}`;
+            }
+        }
+        
+        async function runQuery() {
+            const resultsElement = document.getElementById('results');
+            resultsElement.textContent = 'Running query...';
+            
+            const query = document.getElementById('query').value;
+            
+            try {
+                const response = await fetch('/api/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ query })
+                });
+                
+                const data = await response.json();
+                resultsElement.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultsElement.textContent = `Error: ${error.message}`;
+            }
+        }
+        
+        async function checkDebug() {
+            const resultsElement = document.getElementById('results');
+            resultsElement.textContent = 'Fetching debug info...';
+            
+            try {
+                const response = await fetch('/api/debug');
+                const data = await response.json();
+                resultsElement.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultsElement.textContent = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html> 

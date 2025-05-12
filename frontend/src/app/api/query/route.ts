@@ -21,17 +21,29 @@ export async function POST(request: Request) {
 
     const connection = await global.dbPool.getConnection();
     try {
+      // Execute the query to get results
       const [rows] = await connection.query(query);
-      const [columns] = await connection.query('SHOW COLUMNS FROM ' + query.split('FROM')[1].split(' ')[1]);
-
-      return NextResponse.json({
-        columns: (columns as any[]).map(col => col.Field),
-        rows: rows
-      });
+      
+      // Better type checking for different result types
+      if (Array.isArray(rows) && rows.length > 0) {
+        // For result sets, columns can be determined from the first row
+        const columns = Object.keys(rows[0] as Record<string, any>);
+        return NextResponse.json({
+          columns: columns,
+          rows: rows
+        });
+      } else {
+        // If no rows or not an array (like for INSERT), return empty columns and rows
+        return NextResponse.json({
+          columns: [],
+          rows: []
+        });
+      }
     } finally {
       connection.release();
     }
   } catch (error: any) {
+    console.error('Query error:', error);
     return NextResponse.json(
       { message: error.message || 'Failed to execute query' },
       { status: 500 }

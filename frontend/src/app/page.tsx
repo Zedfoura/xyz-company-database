@@ -17,6 +17,10 @@ interface DatabaseConnection {
   database: string;
 }
 
+type PredefinedQueries = {
+  [key: string]: string;
+};
+
 export default function Home() {
   const [connected, setConnected] = useState(false);
   const [data, setData] = useState<QueryResult[]>([]);
@@ -31,7 +35,7 @@ export default function Home() {
     database: 'xyz_company'
   });
 
-  const predefinedQueries = {
+  const predefinedQueries: PredefinedQueries = {
     "Interviewers for Hellen Cole (Job 11111)": "SELECT DISTINCT i.InterviewerID, p.LastName, p.FirstName FROM InterviewerAssignment i JOIN Interview iv ON i.InterviewID = iv.InterviewID JOIN JobPosition jp ON iv.JobID = jp.JobID JOIN Person p ON i.InterviewerID = p.PersonID WHERE iv.CandidateID = (SELECT PersonID FROM Person WHERE FirstName = 'Hellen' AND LastName = 'Cole') AND jp.JobID = 11111;",
     "Jobs posted by Marketing (January 2011)": "SELECT j.JobID FROM JobPosition j JOIN Department d ON j.DepartmentID = d.Department_ID WHERE d.DepartmentName = 'Marketing' AND j.PostedDate >= '2011-01-01' AND j.PostedDate < '2011-02-01';",
     "Employees with no supervisees": "SELECT e.PersonID, CONCAT(p.FirstName, ' ', p.LastName) AS Name FROM Employee e JOIN Person p ON e.PersonID = p.PersonID WHERE e.PersonID NOT IN (SELECT SupervisorID FROM Employee WHERE SupervisorID IS NOT NULL);",
@@ -46,7 +50,7 @@ export default function Home() {
     "Interviewees selected (name and email)": "SELECT CONCAT(p.FirstName, ' ', p.LastName) AS IntervieweeName, p.Email AS EmailAddress FROM Interview i JOIN Person p ON i.CandidateID = p.PersonID WHERE EXISTS (SELECT 1 FROM InterviewGrade ig WHERE ig.InterviewID = i.InterviewID AND ig.Grade >= 70 GROUP BY ig.InterviewID HAVING COUNT(DISTINCT ig.RoundNumber) >= 5);",
     "Interviewees (name, phone, email)": "SELECT p.FirstName, p.LastName, ph.PhoneNumber, p.Email FROM Person p JOIN PhoneNumber ph ON p.PersonID = ph.PersonID JOIN Interview i ON p.PersonID = i.CandidateID WHERE EXISTS (SELECT 1 FROM InterviewGrade ig WHERE ig.InterviewID = i.InterviewID AND ig.Grade >= 70 GROUP BY ig.InterviewID HAVING COUNT(DISTINCT ig.RoundNumber) >= 5);",
     "Employee with highest average salary": "SELECT p.PersonID, p.FirstName, p.LastName FROM Person p JOIN Salary s ON p.PersonID = s.EmployeeID GROUP BY s.EmployeeID ORDER BY AVG(s.Amount) DESC LIMIT 1;",
-    "Vendor supplying 'Cup' (lowest price)": "SELECT v.VendorID, v.Name AS VendorName FROM Vendor v JOIN VendorPart vp ON v.VendorID = vp.VendorID JOIN Part p ON vp.PartID = p.PartID WHERE p.PartName = 'Cup' AND p.Weight < 4 AND vp.Price = (SELECT MIN(vp2.Price) FROM VendorPart vp2 JOIN Part p2 ON vp2.PartID = p2.PartID WHERE p2.PartName = 'Cup' AND p2.Weight < 4);",
+    "Vendor supplying 'Cup' (lowest price)": "SELECT v.VendorID, v.Name AS VendorName FROM Vendor v JOIN VendorPart vp ON v.VendorID = vp.VendorID JOIN Part p ON vp.PartID = p.PartID JOIN Product pr ON p.ProductID = pr.ProductID WHERE pr.ProductType = 'Cup' AND pr.Weight < 4 AND vp.Price = (SELECT MIN(vp2.Price) FROM VendorPart vp2 JOIN Part p2 ON vp2.PartID = p2.PartID JOIN Product pr2 ON p2.ProductID = pr2.ProductID WHERE pr2.ProductType = 'Cup' AND pr2.Weight < 4);",
     "View: Employee Average Monthly Salaries": "SELECT * FROM EmployeeAverageSalary ORDER BY AverageMonthlySalary DESC;",
     "View: Interview Rounds Passed": "SELECT * FROM InterviewRoundsPassed WHERE PassedRounds >= 5 ORDER BY PassedRounds DESC;",
     "View: Product Type Sales": "SELECT * FROM ProductTypeSales ORDER BY TotalItemsSold DESC;",
@@ -119,7 +123,7 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ query: selectedQuery }),
+        body: JSON.stringify({ query: predefinedQueries[selectedQuery] }),
       });
       
       const result = await response.json();
@@ -303,7 +307,7 @@ export default function Home() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    {table.columns.map((column, colIndex) => (
+                    {table.columns && Array.isArray(table.columns) && table.columns.map((column, colIndex) => (
                       <th
                         key={colIndex}
                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -314,14 +318,14 @@ export default function Home() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {table.rows.map((row, rowIndex) => (
+                  {table.rows && Array.isArray(table.rows) && table.rows.map((row, rowIndex) => (
                     <tr key={rowIndex}>
-                      {row.map((cell: any, cellIndex: number) => (
+                      {Array.isArray(row) && row.map((cell: any, cellIndex: number) => (
                         <td
                           key={cellIndex}
                           className="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
                         >
-                          {cell}
+                          {cell != null ? cell.toString() : ''}
                         </td>
                       ))}
                     </tr>

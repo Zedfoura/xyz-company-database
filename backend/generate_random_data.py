@@ -2,15 +2,19 @@ import random
 import pymysql
 from faker import Faker
 from datetime import datetime, timedelta
+import os
+from dotenv import load_dotenv
 
+# Load environment variables
+load_dotenv()
 fake = Faker()
 
 def connect_to_db():
     return pymysql.connect(
-        host='Tinatseis-MacBook-Air.local',
-        user='root',
-        password='shingi123',
-        database='xyzcompany'
+        host=os.getenv('DB_HOST', 'localhost'),
+        user=os.getenv('DB_USER', 'root'),
+        password=os.getenv('DB_PASSWORD', ''),
+        database=os.getenv('DB_NAME', 'xyzcompany')
     )
 
 def generate_person_data(num_records=100):
